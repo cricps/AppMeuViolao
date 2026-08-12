@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App de Treino de Violão</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #bb86fc;
+            --highlight: #03dac6;
+            --text: #e0e0e0;
+            --section-title: #ff5252; /* Cor vermelha para as seções */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 15px 15px 100px 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        h2 { margin-top: 0; }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            background: #2d2d2d;
+            color: #fff;
+            border: 1px solid #444;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .panel {
+            background: #282828;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .ritmo-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .seta {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: #383838;
+            color: #777;
+        }
+
+        .seta.ativa {
+            background: var(--highlight);
+            color: #000;
+            transform: scale(1.15);
+            transition: transform 0.1s;
+        }
+
+        .controles-tom {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: var(--highlight);
+            color: #000;
+            border: none;
+            padding: 9px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button:active { opacity: 0.8; }
+
+        .btn-imprimir {
+            background: #bb86fc;
+            color: #000;
+            margin-left: auto;
+        }
+
+        .cifra-box {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            background: #181818;
+            padding: 18px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .acorde {
+            color: var(--accent);
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* ESTILO PARA AS MARCAÇÕES DE ESTRUTURA (VERMELHO) */
+        .secao-titulo {
+            color: var(--section-title);
+            font-weight: bold;
+        }
+
+        /* PAINEL DO DESENHO DO ACORDE (BRAÇO DO VIOLÃO) */
+        .acorde-info-container {
+            margin-top: 15px;
+            background: #252525;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .acorde-titulo {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--highlight);
+        }
+
+        canvas#chordCanvas {
+            background: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .fixed-player-dock {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+            padding: 10px 15px;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.7);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dock-content {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        audio {
+            width: 100%;
+            height: 38px;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        @media print {
+            body { background: #ffffff !important; color: #000000 !important; padding: 0 !important; }
+            .container { box-shadow: none !important; background: #ffffff !important; padding: 0 !important; max-width: 100% !important; }
+            select, .controles-tom button, .fixed-player-dock, .acorde-info-container, .no-print { display: none !important; }
+            h2 { color: #000000 !important; font-size: 18pt !important; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px !important; }
+            .panel { background: #f0f0f0 !important; color: #000000 !important; border: 1px solid #ccc !important; margin-bottom: 15px !important; }
+            .seta { background: #e0e0e0 !important; color: #000000 !important; }
+            .cifra-box { background: #ffffff !important; color: #000000 !important; border: none !important; font-size: 11pt !important; line-height: 1.6 !important; padding: 0 !important; }
+            .acorde { color: #d32f2f !important; font-weight: bold !important; text-decoration: none !important; }
+            .secao-titulo { color: #b71c1c !important; font-weight: bold !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <select id="seletorMusica" class="no-print" onchange="carregarMusica(this.value)">
+        <option value="euAmeiTeVer">Eu Amei Te Ver - Tiago Iorc</option>
+		<option value="tennesseeWhiskey">Tennessee Whiskey - Chris Stapleton</option>
+		<option value="bornReady">Born Ready - Zayde Wølf</option>
+		<option value="belissimoEsposo">Belíssimo Esposo - SHALOM</option>
+    </select>
+
+    <h2 id="tituloMusica">Eu Amei Te Ver - Tiago Iorc</h2>
+
+    <div class="controles-tom">
+        <span class="no-print"><strong>Tom:</strong></span>
+        <button class="no-print" onclick="mudarTom(-1)">-1 Semitom</button>
+        <button class="no-print" onclick="mudarTom(1)">+1 Semitom</button>
+        <span id="transposicaoVal" style="color: var(--accent); font-weight: bold;">(Original)</span>
+        
+        <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Cifra</button>
+    </div>
+
+    <div class="panel">
+        <div><strong>Ritmo:</strong> <span id="nomeRitmo">Pop / Balada</span> (<span id="bpmLabel">82 BPM</span>)</div>
+        <div class="ritmo-container" id="ritmoSetas"></div>
+    </div>
+
+    <!-- ÁREA DA CIFRA -->
+    <div class="cifra-box" id="cifraBox"></div>
+    
+    <!-- QUADRO DE DESENHO DO BRAÇO DO VIOLÃO -->
+    <div class="acorde-info-container no-print" id="acordeArea">
+        <div class="acorde-titulo" id="nomeAcordeExibido">Clique em um acorde na cifra</div>
+        <canvas id="chordCanvas" width="220" height="240"></canvas>
+    </div>
+</div>
+
+<div class="fixed-player-dock no-print">
+    <div class="dock-content">
+        <audio id="audioPlayer" controls src=""></audio>
+    </div>
+</div>
+
+<script>
+    const dicionarioAcordes = {
+        "C":   { frets: ['x', 3, 2, 0, 1, 0] },
+        "C#":  { frets: ['x', 4, 6, 6, 6, 4], barre: 4, barreStart: 1 },
+        "D":   { frets: ['x', 'x', 0, 2, 3, 2] },
+        "D#":  { frets: ['x', 6, 8, 8, 8, 6], barre: 6, barreStart: 1 },
+        "E":   { frets: [0, 2, 2, 1, 0, 0] },
+        "F":   { frets: [1, 3, 3, 2, 1, 1], barre: 1, barreStart: 0 },
+        "F#":  { frets: [2, 4, 4, 3, 2, 2], barre: 2, barreStart: 0 },
+        "G":   { frets: [3, 2, 0, 0, 0, 3] },
+        "G#":  { frets: [4, 6, 6, 5, 4, 4], barre: 4, barreStart: 0 },
+        "A":   { frets: ['x', 0, 2, 2, 2, 0] },
+        "A#":  { frets: ['x', 1, 3, 3, 3, 1], barre: 1, barreStart: 1 },
+		"Am/G": { frets: [3, 0, 2, 2, 1, 0] },
+        "B":   { frets: ['x', 2, 4, 4, 4, 2], barre: 2, barreStart: 1 },
+		"C9":   { frets: ['x', 3, 2, 0, 3, 3] },
+        "Bm7":  { frets: ['x', 2, 0, 2, 0, 2] },
+        "D4":   { frets: ['x', 'x', 0, 2, 3, 3] },
+        "D/F#": { frets: [2, 0, 0, 2, 3, 2] },
+        "C/E":  { frets: [0, 3, 2, 0, 1, 0] },
+        "D/C":  { frets: ['x', 3, 0, 2, 3, 2] },
+
+        "Cm":  { frets: ['x', 3, 5, 5, 4, 3], barre: 3, barreStart: 1 },
+        "C#m": { frets: ['x', 4, 6, 6, 5, 4], barre: 4, barreStart: 1 },
+        "Dm":  { frets: ['x', 'x', 0, 2, 3, 1] },
+        "D#m": { frets: ['x', 6, 8, 8, 7, 6], barre: 6, barreStart: 1 },
+        "Em":  { frets: [0, 2, 2, 0, 0, 0] },
+        "Fm":  { frets: [1, 3, 3, 1, 1, 1], barre: 1, barreStart: 0 },
+        "F#m": { frets: [2, 4, 4, 2, 2, 2], barre: 2, barreStart: 0 },
+        "Gm":  { frets: [3, 5, 5, 3, 3, 3], barre: 3, barreStart: 0 },
+        "G#m": { frets: [4, 6, 6, 4, 4, 4], barre: 4, barreStart: 0 },
+        "Am":  { frets: ['x', 0, 2, 2, 1, 0] },
+        "A#m": { frets: ['x', 1, 3, 3, 2, 1], barre: 1, barreStart: 1 },
+        "Bm":  { frets: ['x', 2, 4, 4, 3, 2], barre: 2, barreStart: 1 }
+    };
+
+    const bancoMusicas = {
+        euAmeiTeVer: {
+            titulo: "Eu Amei Te Ver - Tiago Iorc",
+            ritmo: "Pop / Balada (↓  ↓  ↑  ↑  ↓  ↑)",
+            setas: ["↓", "↓", "↑", "↑", "↓", "↑"],
+            bpm: 82,
+            scrollSpeed: 70,
+            audioSrc: "euameitever.mp3",
+            cifra: `<span class="secao-titulo">[Intro]</span> <span class="acorde" onclick="verAcorde('Am')">Am</span>  <span class="acorde" onclick="verAcorde('G')">G</span>     <span class="acorde" onclick="verAcorde('C')">C</span>  <span class="acorde" onclick="verAcorde('Am')">Am</span>    <span class="acorde" onclick="verAcorde('F')">F</span>    <span class="acorde" onclick="verAcorde('G')">G</span>    
+
+<span class="secao-titulo">[Primeira Parte]</span>
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+Ah
+       <span class="acorde" onclick="verAcorde('G')">G</span>       <span class="acorde" onclick="verAcorde('C')">C</span>
+Quase ninguém vê
+ <span class="acorde" onclick="verAcorde('Am')">Am</span>  
+Quanto mais o tempo passa
+
+Mais aumenta a graça
+          <span class="acorde" onclick="verAcorde('F')">F</span>    <span class="acorde" onclick="verAcorde('G')">G</span>    
+Em te viver
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+Ah
+          <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('C')">C</span>
+E sai sem eu  dizer
+    <span class="acorde" onclick="verAcorde('Am')">Am</span>  
+Tem mais no que te mostro
+
+Não escondo o quanto
+            <span class="acorde" onclick="verAcorde('F')">F</span>    <span class="acorde" onclick="verAcorde('G')">G</span>    
+Gosto de você
+<span class="secao-titulo">[Pré-Refrão]</span>
+<span class="acorde" onclick="verAcorde('F')">F</span>  
+    O coração dispara
+                <span class="acorde" onclick="verAcorde('G')">G</span>    
+Tropeça, quase para
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+   Me encaixo no teu cheiro
+<span class="acorde" onclick="verAcorde('G')">G</span>    
+      E ali me deixo inteiro
+<span class="secao-titulo">[Refrão]</span>
+<span class="acorde" onclick="verAcorde('C')">C</span>            <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('Am')">Am</span>
+    Eu amei te     ver
+         <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('F')">F</span>  
+Eu amei te     ver
+            <span class="acorde" onclick="verAcorde('C')">C</span>  
+Eu amei te ver
+
+<span class="acorde" onclick="verAcorde('C')">C</span>            <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('Am')">Am</span>
+    Eu amei te     ver
+         <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('F')">F</span>  
+Eu amei te     ver
+            <span class="acorde" onclick="verAcorde('C')">C</span>  
+Eu amei te ver
+<span class="secao-titulo">[Segunda Parte]</span>
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+Ah
+       <span class="acorde" onclick="verAcorde('G')">G</span>       <span class="acorde" onclick="verAcorde('C')">C</span>
+Quase ninguém vê
+ <span class="acorde" onclick="verAcorde('Am')">Am</span>  
+Quanto mais aumenta a graça
+                          <span class="acorde" onclick="verAcorde('F')">F</span>    <span class="acorde" onclick="verAcorde('G')">G</span>    
+Mais o tempo passa por você
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+Ah
+          <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('C')">C</span>
+E sai sem eu  dizer
+   <span class="acorde" onclick="verAcorde('Am')">Am</span>  
+O tanto que eu gosto
+
+Me desmancho
+                    <span class="acorde" onclick="verAcorde('F')">F</span>    <span class="acorde" onclick="verAcorde('G')">G</span>    
+Quando encosto em você
+<span class="secao-titulo">[Pré-Refrão]</span>
+<span class="acorde" onclick="verAcorde('F')">F</span>  
+    O coração dispara
+                <span class="acorde" onclick="verAcorde('G')">G</span>    
+Tropeça, quase para
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+   Me encaixo no teu cheiro
+<span class="acorde" onclick="verAcorde('G')">G</span>    
+      E ali me deixo inteiro
+<span class="secao-titulo">[Refrão]</span>
+<span class="acorde" onclick="verAcorde('C')">C</span>            <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('Am')">Am</span>
+    Eu amei te     ver
+         <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('F')">F</span>  
+Eu amei te     ver
+            <span class="acorde" onclick="verAcorde('C')">C</span>  
+Eu amei te ver
+
+<span class="acorde" onclick="verAcorde('C')">C</span>            <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('Am')">Am</span>
+    Eu amei te     ver
+         <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('F')">F</span>  
+Eu amei te     ver
+            <span class="acorde" onclick="verAcorde('C')">C</span>  
+Eu amei te ver
+<span class="secao-titulo">[Terceira Parte]</span>
+<span class="acorde" onclick="verAcorde('F')">F</span>  
+    O coração dispara
+                <span class="acorde" onclick="verAcorde('G')">G</span>    
+Tropeça, quase para
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+   Me enlaço no teu beijo
+<span class="acorde" onclick="verAcorde('G')">G</span>    
+      Abraço teu desejo
+<span class="acorde" onclick="verAcorde('F')">F</span>  
+    A mão ampara a calma
+              <span class="acorde" onclick="verAcorde('G')">G</span>    
+Encosta lá na alma
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+   E o corpo vai sem medo
+<span class="acorde" onclick="verAcorde('G')">G</span>    
+      Descasca teu segredo
+
+<span class="acorde" onclick="verAcorde('F')">F</span>  
+    Da boca sai: não para
+                  <span class="acorde" onclick="verAcorde('G')">G</span>    
+É o coração que fala
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+   O laço é certeiro
+               <span class="acorde" onclick="verAcorde('G')">G</span>    
+Metades por inteiro
+<span class="acorde" onclick="verAcorde('F')">F</span>  
+    Não vou voltar tão cedo
+<span class="acorde" onclick="verAcorde('G')">G</span>    
+      Mas vou voltar
+            <span class="acorde" onclick="verAcorde('C')">C</span>  
+Porque eu amei te ver
+
+     <span class="acorde" onclick="verAcorde('Am')">Am</span>        <span class="acorde" onclick="verAcorde('G')">G</span>    
+Eu amei te ver
+<span class="acorde" onclick="verAcorde('F')">F</span>                <span class="acorde" onclick="verAcorde('C')">C</span>  
+    Eu amei te ver
+
+         <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Eu amei te     ver
+         <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('F')">F</span>  
+Eu amei te     ver
+            <span class="acorde" onclick="verAcorde('C')">C</span>  
+Eu amei te ver
+
+         <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Eu amei te     ver
+         <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('F')">F</span>  
+Eu amei te     ver
+            <span class="acorde" onclick="verAcorde('C')">C</span>  
+Eu amei te ver
+
+         <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Eu amei te     ver
+         <span class="acorde" onclick="verAcorde('G')">G</span>      <span class="acorde" onclick="verAcorde('F')">F</span>  
+Eu amei te     ver
+            <span class="acorde" onclick="verAcorde('C')">C</span>  
+Eu amei te ver`
+        },
+        tennesseeWhiskey: {
+            titulo: "Tennessee Whiskey - Chris Stapleton",
+            ritmo: "Soul / Blues 6/8 (↓  ↓  ↑  ↓  ↑)",
+            setas: ["↓", " ", "↓", "↑", "↓", "↑"],
+            bpm: 75,
+            scrollSpeed: 120,
+            audioSrc: "tennesseewhiskey.mp3",
+            cifra: `<span class="secao-titulo">[Primeira Parte]</span>
+
+<span class="acorde" onclick="verAcorde('A')">A</span>                                   <span class="acorde" onclick="verAcorde('Bm')">Bm</span>     <span class="acorde" onclick="verAcorde('C#m')">C#m</span> <span class="acorde" onclick="verAcorde('Bm')">Bm</span>
+I used to spend my nights out in a barroom
+<span class="acorde" onclick="verAcorde('Bm')">Bm</span>                          <span class="acorde" onclick="verAcorde('A')">A</span>    <span class="acorde" onclick="verAcorde('D')">D</span> <span class="acorde" onclick="verAcorde('A')">A</span>
+Liquor was the only love I've known
+<span class="acorde" onclick="verAcorde('A')">A</span>                                         <span class="acorde" onclick="verAcorde('Bm')">Bm</span>    <span class="acorde" onclick="verAcorde('C#m')">C#m</span> <span class="acorde" onclick="verAcorde('Bm')">Bm</span>
+But you rescued me from reachin' for the bottom
+<span class="acorde" onclick="verAcorde('Bm')">Bm</span>                <span class="acorde" onclick="verAcorde('D')">D</span>                       <span class="acorde" onclick="verAcorde('A')">A</span>    <span class="acorde" onclick="verAcorde('D')">D</span> <span class="acorde" onclick="verAcorde('A')">A</span>
+And brought me back from being too far gone
+
+<span class="secao-titulo">[Refrão]</span>
+
+             <span class="acorde" onclick="verAcorde('A')">A</span>  <span class="acorde" onclick="verAcorde('D')">D</span> <span class="acorde" onclick="verAcorde('A')">A</span>                 <span class="acorde" onclick="verAcorde('Bm')">Bm</span>   <span class="acorde" onclick="verAcorde('C#m')">C#m</span> <span class="acorde" onclick="verAcorde('Bm')">Bm</span>
+You're as smooth   as tennessee whiskey
+<span class="acorde" onclick="verAcorde('Bm')">Bm</span>          <span class="acorde" onclick="verAcorde('D')">D</span>                   <span class="acorde" onclick="verAcorde('A')">A</span>    <span class="acorde" onclick="verAcorde('D')">D</span> <span class="acorde" onclick="verAcorde('A')">A</span>
+You're as sweet as strawberry wine
+            <span class="acorde" onclick="verAcorde('A')">A</span>                  <span class="acorde" onclick="verAcorde('Bm')">Bm</span>    <span class="acorde" onclick="verAcorde('C#m')">C#m</span> <span class="acorde" onclick="verAcorde('Bm')">Bm</span>
+You're as warm as a glass of brandy
+<span class="acorde" onclick="verAcorde('Bm')">Bm</span>                  <span class="acorde" onclick="verAcorde('D')">D</span>                           <span class="acorde" onclick="verAcorde('A')">A</span>    <span class="acorde" onclick="verAcorde('D')">D</span> <span class="acorde" onclick="verAcorde('A')">A</span>
+And honey, I stay stoned on your love all the time
+
+<span class="secao-titulo">[Segunda Parte]</span>
+
+<span class="acorde" onclick="verAcorde('A')">A</span>                                         <span class="acorde" onclick="verAcorde('Bm')">Bm</span>    <span class="acorde" onclick="verAcorde('C#m')">C#m</span> <span class="acorde" onclick="verAcorde('Bm')">Bm</span>
+I've looked for love in all the same old places
+<span class="acorde" onclick="verAcorde('Bm')">Bm</span>                                   <span class="acorde" onclick="verAcorde('A')">A</span>  <span class="acorde" onclick="verAcorde('D')">D</span> <span class="acorde" onclick="verAcorde('A')">A</span>
+Found the bottom of a bottle always dry
+<span class="acorde" onclick="verAcorde('A')">A</span>                                           <span class="acorde" onclick="verAcorde('Bm')">Bm</span>     <span class="acorde" onclick="verAcorde('C#m')">C#m</span> <span class="acorde" onclick="verAcorde('Bm')">Bm</span>
+But when you poured out your heart I didn't waste it
+                <span class="acorde" onclick="verAcorde('Bm')">Bm</span>                               <span class="acorde" onclick="verAcorde('A')">A</span>
+'Cause there's nothing like your love to get me high
+
+<span class="secao-titulo">[Refrão]</span>
+
+             <span class="acorde" onclick="verAcorde('A')">A</span>   <span class="acorde" onclick="verAcorde('D')">D</span> <span class="acorde" onclick="verAcorde('A')">A</span>               <span class="acorde" onclick="verAcorde('Bm')">Bm</span>    <span class="acorde" onclick="verAcorde('C#m')">C#m</span> <span class="acorde" onclick="verAcorde('Bm')">Bm</span>
+You're as smooth    as tennessee whiskey
+<span class="acorde" onclick="verAcorde('Bm')">Bm</span>         <span class="acorde" onclick="verAcorde('D')">D</span>                   <span class="acorde" onclick="verAcorde('A')">A</span>    <span class="acorde" onclick="verAcorde('D')">D</span> <span class="acorde" onclick="verAcorde('A')">A</span>
+You're as sweet as strawberry wine
+<span class="acorde" onclick="verAcorde('A')">A</span>                            <span class="acorde" onclick="verAcorde('Bm')">Bm</span>     <span class="acorde" onclick="verAcorde('C#m')">C#m</span> <span class="acorde" onclick="verAcorde('Bm')">Bm</span>
+You're as warm as a glass of brandy
+<span class="acorde" onclick="verAcorde('Bm')">Bm</span>                                              <span class="acorde" onclick="verAcorde('A')">A</span>    <span class="acorde" onclick="verAcorde('D')">D</span> <span class="acorde" onclick="verAcorde('A')">A</span>
+And honey, I stay stoned on your love all the time (2x)`
+        },
+		bornReady: {
+            titulo: "Born Ready - Zayde Wølf (Capo 1ª Casa)",
+            ritmo: "Rock / Pop (↓  ↓↑  ↑↓↑)",
+            setas: ["↓", " ", "↓", "↑", " ", "↑", "↓", "↑"],
+            bpm: 68,
+            scrollSpeed: 60,
+            audioSrc: "bornready.mp3",
+            cifra: `<span class="secao-titulo">[Capotraste na 1ª casa]</span>
+
+<span class="secao-titulo">[Verso 1]</span>
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>                        <span class="acorde" onclick="verAcorde('Am')">Am/G</span>
+I don't believe in no devil
+                          <span class="acorde" onclick="verAcorde('Am')">Am</span>
+'Cause I done raised this hell
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>                        <span class="acorde" onclick="verAcorde('Am')">Am/G</span>
+I've been the last one standing
+                     <span class="acorde" onclick="verAcorde('Am')">Am</span>
+When all the giants fell
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+I won't shiver
+
+I won't shake
+            <span class="acorde" onclick="verAcorde('Am')">Am</span>
+I'm made of stone
+
+I don't break
+
+<span class="secao-titulo">[Refrão]</span>
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+Start me up
+Open my eyes
+<span class="acorde" onclick="verAcorde('C')">C</span>
+Turn me loose and you'll see why
+<span class="acorde" onclick="verAcorde('F')">F</span>
+I was born, born ready
+<span class="acorde" onclick="verAcorde('G')">G</span>
+I was born, born ready
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+Staring at the pressure now
+<span class="acorde" onclick="verAcorde('C')">C</span>
+I won't quit, not backing down
+<span class="acorde" onclick="verAcorde('F')">F</span>
+I was born, born ready
+<span class="acorde" onclick="verAcorde('G')">G</span>
+I was born, born ready
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+I am the unknown fighter
+
+<span class="acorde" onclick="verAcorde('Am')">Am/G</span>
+A dark horse coming for you (yeah)
+(Oh, oh, oh, oh)
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+I'm gonna push up higher
+
+<span class="acorde" onclick="verAcorde('Am')">Am/G</span>
+I'm gonna do what I do (uhh)
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+I won't shiver
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+I won't shake
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+I'm made of stone
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+I don't break
+<span class="secao-titulo">[Refrão]</span>
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+Start me up
+
+Open my eyes
+
+<span class="acorde" onclick="verAcorde('C')">C</span>
+Turn me loose and you'll see why
+
+<span class="acorde" onclick="verAcorde('F')">F</span>
+I was born, born ready
+
+<span class="acorde" onclick="verAcorde('G')">G</span>
+I was born, born ready
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+Staring at the pressure now
+
+<span class="acorde" onclick="verAcorde('Am')">Am/G</span>
+I won't quit, not backing down
+
+<span class="acorde" onclick="verAcorde('F')">F</span>
+I was born, born ready
+
+<span class="acorde" onclick="verAcorde('G')">G</span>
+I was born, born ready
+
+<span class="acorde" onclick="verAcorde('F')">F</span>
+I was born, born ready
+
+<span class="acorde" onclick="verAcorde('G')">G</span>
+I was born, born ready
+
+<span class="secao-titulo">[Ponte]</span>
+
+<span class="acorde" onclick="verAcorde('Am')">Am</span>
+Keep pushin' up higher, higher
+
+<span class="acorde" onclick="verAcorde('C')">C</span>
+Keep pushin' up
+
+<span class="acorde" onclick="verAcorde('F')">F</span>
+Keep pushin' up higher, higher
+
+<span class="acorde" onclick="verAcorde('G')">G</span>
+Keep pushin' up
+
+<span class="secao-titulo">[Refrão Final]</span>
+
+<span class="acorde" onclick="verAcorde('C')">C</span>
+I won't quit, not backing down
+<span class="acorde" onclick="verAcorde('C')">C</span>
+I won't quit, not backing down
+<span class="acorde" onclick="verAcorde('C')">C</span>
+I won't quit, not backing down
+<span class="acorde" onclick="verAcorde('G')">G</span>
+I was born, born ready`
+        },
+		belissimoEsposo: {
+            titulo: "Belíssimo Esposo - Comunidade Católica Shalom",
+            ritmo: "Adoração/ Dedilhado ou batida suave 4/4 (P I M A M I)",
+            setas: ["P", "I", "M", "A", "M", "I"],
+            bpm: 68,
+            scrollSpeed: 100,
+            audioSrc: "belissimoesposo.mp3",
+            cifra: `<span class="secao-titulo">[Primeira Parte]</span>
+
+ <span class="acorde" onclick="verAcorde('Em')">Em</span>      <span class="acorde" onclick="verAcorde('D')">D</span>       <span class="acorde" onclick="verAcorde('Bm7')">Bm7</span>
+Beijo a Tua paixão
+            <span class="acorde" onclick="verAcorde('C9')">C9</span>                   <span class="acorde" onclick="verAcorde('Em')">Em</span> <span class="acorde" onclick="verAcorde('D')">D</span>
+Que me liberta das minhas paixões
+              <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Beijo a Tua cruz
+        <span class="acorde" onclick="verAcorde('Am')">Am</span>                 <span class="acorde" onclick="verAcorde('D4')">D4</span>
+Que condena e esmaga o pecado em mim
+
+ <span class="acorde" onclick="verAcorde('Em')">Em</span>         <span class="acorde" onclick="verAcorde('D')">D</span>             <span class="acorde" onclick="verAcorde('Bm7')">Bm7</span>
+Beijo Teus cravos, Tuas mãos
+        <span class="acorde" onclick="verAcorde('C9')">C9</span>                  <span class="acorde" onclick="verAcorde('Em')">Em</span> <span class="acorde" onclick="verAcorde('D')">D</span>
+Que apagam o castigo do mal
+              <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Beijo Tua ferida
+        <span class="acorde" onclick="verAcorde('Am')">Am</span>                 <span class="acorde" onclick="verAcorde('D')">D</span>
+Que curou a ferida do meu coração
+
+<span class="secao-titulo">[Pré-Refrão]</span>
+
+        <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Eu te beijo Senhor
+        <span class="acorde" onclick="verAcorde('D')">D</span>          <span class="acorde" onclick="verAcorde('Bm7')">Bm7</span>      <span class="acorde" onclick="verAcorde('Em')">Em</span>  <span class="acorde" onclick="verAcorde('D')">D</span>  <span class="acorde" onclick="verAcorde('C9')">C9</span>
+E a tua paixão é o meu tudo
+        <span class="acorde" onclick="verAcorde('G')">G</span>
+És meu tudo, Jesus
+  <span class="acorde" onclick="verAcorde('Am')">Am</span>     <span class="acorde" onclick="verAcorde('D')">D</span>        <span class="acorde" onclick="verAcorde('G')">G</span>   (<span class="acorde" onclick="verAcorde('C/E')">C/E</span> <span class="acorde" onclick="verAcorde('D/F#')">D/F#</span>)
+Amado de minh'alma
+
+<span class="secao-titulo">[Refrão]</span>
+
+<span class="acorde" onclick="verAcorde('G')">G</span>                <span class="acorde" onclick="verAcorde('D/F#')">D/F#</span>
+Oh belíssimo esposo
+                  <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Mais belo que todos os homens
+ <span class="acorde" onclick="verAcorde('C')">C</span>      <span class="acorde" onclick="verAcorde('D')">D</span>         <span class="acorde" onclick="verAcorde('G')">G</span>
+Santo, Santo és Tu
+
+                <span class="acorde" onclick="verAcorde('D/F#')">D/F#</span>
+Belíssimo esposo
+                  <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Esconde-me em Teu lado aberto
+    <span class="acorde" onclick="verAcorde('C')">C</span>    <span class="acorde" onclick="verAcorde('D')">D</span>            <span class="acorde" onclick="verAcorde('Em')">Em</span>      <span class="acorde" onclick="verAcorde('D')">D</span>  <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Em Tua chaga de amor, de amor
+
+<span class="secao-titulo">[Segunda Parte]</span>
+
+ <span class="acorde" onclick="verAcorde('Em')">Em</span>        <span class="acorde" onclick="verAcorde('D')">D</span>            <span class="acorde" onclick="verAcorde('Bm7')">Bm7</span>
+Beijo a lança que abriu
+   <span class="acorde" onclick="verAcorde('C9')">C9</span>                  
+A fonte do amor imortal
+<span class="acorde" onclick="verAcorde('Em')">Em</span>      <span class="acorde" onclick="verAcorde('D')">D</span>         <span class="acorde" onclick="verAcorde('C9')">C9</span>
+A fonte do Amor sem fim
+        <span class="acorde" onclick="verAcorde('Am')">Am</span>                  <span class="acorde" onclick="verAcorde('D')">D</span>
+Que pagou o que eu não poderia pagar
+
+ <span class="acorde" onclick="verAcorde('Em')">Em</span>         <span class="acorde" onclick="verAcorde('D')">D</span>          <span class="acorde" onclick="verAcorde('Bm7')">Bm7</span>
+Beijo o teu lado aberto
+            <span class="acorde" onclick="verAcorde('C9')">C9</span>                  
+Jorrando rios de vida e de paz
+     <span class="acorde" onclick="verAcorde('Em')">Em</span>   <span class="acorde" onclick="verAcorde('D')">D</span>      <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Fazendo brotar em mim
+          <span class="acorde" onclick="verAcorde('Am')">Am</span>                    <span class="acorde" onclick="verAcorde('D')">D</span>
+Um canto novo, um hino esponsal
+
+<span class="secao-titulo">[Pré-Refrão]</span>
+
+<span class="acorde" onclick="verAcorde('C9')">C9</span>
+Beijo Tuas vestes
+    <span class="acorde" onclick="verAcorde('D')">D</span>
+Que esconderam
+     <span class="acorde" onclick="verAcorde('Bm7')">Bm7</span>        <span class="acorde" onclick="verAcorde('Em')">Em</span>   <span class="acorde" onclick="verAcorde('D')">D</span>  <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Minhas misérias
+    <span class="acorde" onclick="verAcorde('G')">G</span>
+Vergonha não há
+     <span class="acorde" onclick="verAcorde('Am')">Am</span>     <span class="acorde" onclick="verAcorde('D')">D</span>     <span class="acorde" onclick="verAcorde('G')">G</span>
+Me adornas com Amor
+
+<span class="secao-titulo">[Refrão]</span>
+
+<span class="acorde" onclick="verAcorde('G')">G</span>                <span class="acorde" onclick="verAcorde('D/F#')">D/F#</span>
+Oh belíssimo esposo
+                  <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Mais belo que todos os homens
+ <span class="acorde" onclick="verAcorde('C')">C</span>      <span class="acorde" onclick="verAcorde('D')">D</span>         <span class="acorde" onclick="verAcorde('G')">G</span>
+Santo, Santo és Tu
+
+                <span class="acorde" onclick="verAcorde('D/F#')">D/F#</span>
+Belíssimo esposo
+                  <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Esconde-me em Teu lado aberto
+    <span class="acorde" onclick="verAcorde('C')">C</span>    <span class="acorde" onclick="verAcorde('D')">D</span>            <span class="acorde" onclick="verAcorde('Em')">Em</span>      <span class="acorde" onclick="verAcorde('D')">D</span>  <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Em Tua chaga de amor, de amor
+
+<span class="secao-titulo">[Terceira Parte]</span>
+
+<span class="acorde" onclick="verAcorde('Em')">Em</span>            <span class="acorde" onclick="verAcorde('D')">D</span>                <span class="acorde" onclick="verAcorde('Bm7')">Bm7</span>
+Beijo os lençóis que envolveram
+       <span class="acorde" onclick="verAcorde('C9')">C9</span>                 <span class="acorde" onclick="verAcorde('Em')">Em</span>
+O Teu corpo ferido de amor
+         <span class="acorde" onclick="verAcorde('D')">D</span>            <span class="acorde" onclick="verAcorde('C9')">C9</span>
+E cobriram meu coração
+      <span class="acorde" onclick="verAcorde('Am')">Am</span>                <span class="acorde" onclick="verAcorde('D')">D</span>
+Revestiram-me de realeza
+
+<span class="acorde" onclick="verAcorde('Em')">Em</span>            <span class="acorde" onclick="verAcorde('D')">D</span>            <span class="acorde" onclick="verAcorde('Bm7')">Bm7</span>
+Beijo o Teu Santo sepulcro
+         <span class="acorde" onclick="verAcorde('C9')">C9</span>                
+Testemunha da ressurreição
+<span class="acorde" onclick="verAcorde('Em')">Em</span>          <span class="acorde" onclick="verAcorde('D')">D</span>         <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Quero ressuscitar também
+        <span class="acorde" onclick="verAcorde('Am')">Am</span>                 <span class="acorde" onclick="verAcorde('D')">D</span>
+E encerrar-me dentro de Ti
+
+<span class="secao-titulo">[Pré-Refrão]</span>
+
+          <span class="acorde" onclick="verAcorde('C')">C</span>
+Quero em Ti mergulhar
+     <span class="acorde" onclick="verAcorde('D/C')">D/C</span>
+E então renascer
+          <span class="acorde" onclick="verAcorde('Bm7')">Bm7</span>         <span class="acorde" onclick="verAcorde('Em')">Em</span>  <span class="acorde" onclick="verAcorde('D')">D</span>  <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Na Tua chaga criadora
+        <span class="acorde" onclick="verAcorde('G')">G</span>
+Descansar a minh'alma
+<span class="acorde" onclick="verAcorde('Am')">Am</span>       <span class="acorde" onclick="verAcorde('D')">D</span>   <span class="acorde" onclick="verAcorde('G')">G</span>  (<span class="acorde" onclick="verAcorde('C/E')">C/E</span> <span class="acorde" onclick="verAcorde('D/F#')">D/F#</span>)
+Em Teu coração
+
+<span class="secao-titulo">[Refrão Final]</span>
+
+<span class="acorde" onclick="verAcorde('G')">G</span>                <span class="acorde" onclick="verAcorde('D/F#')">D/F#</span>
+Oh belíssimo esposo
+                  <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Mais belo que todos os homens
+ <span class="acorde" onclick="verAcorde('C')">C</span>      <span class="acorde" onclick="verAcorde('D')">D</span>         <span class="acorde" onclick="verAcorde('G')">G</span>
+Santo, Santo és Tu
+
+                <span class="acorde" onclick="verAcorde('D/F#')">D/F#</span>
+Belíssimo esposo
+                  <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Esconde-me em Teu lado aberto
+    <span class="acorde" onclick="verAcorde('C')">C</span>    <span class="acorde" onclick="verAcorde('D')">D</span>            <span class="acorde" onclick="verAcorde('Em')">Em</span>      <span class="acorde" onclick="verAcorde('D')">D</span>  <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Em Tua chaga de amor, de amor
+
+<span class="acorde" onclick="verAcorde('G')">G</span>                <span class="acorde" onclick="verAcorde('D/F#')">D/F#</span>
+Oh belíssimo esposo
+                  <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Mais belo que todos os homens
+ <span class="acorde" onclick="verAcorde('C')">C</span>      <span class="acorde" onclick="verAcorde('D')">D</span>         <span class="acorde" onclick="verAcorde('G')">G</span>
+Santo, Santo és Tu
+
+                <span class="acorde" onclick="verAcorde('D/F#')">D/F#</span>
+Belíssimo esposo
+                  <span class="acorde" onclick="verAcorde('Am')">Am</span>
+Esconde-me em Teu lado aberto
+    <span class="acorde" onclick="verAcorde('C')">C</span>    <span class="acorde" onclick="verAcorde('D')">D</span>            <span class="acorde" onclick="verAcorde('Em')">Em</span>      <span class="acorde" onclick="verAcorde('D')">D</span>  <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Em Tua chaga de amor, de amor aberto
+    <span class="acorde" onclick="verAcorde('C')">C</span>    <span class="acorde" onclick="verAcorde('D')">D</span>        <span class="acorde" onclick="verAcorde('Em')">Em</span>      <span class="acorde" onclick="verAcorde('D')">D</span>  <span class="acorde" onclick="verAcorde('C')">C</span>  <span class="acorde" onclick="verAcorde('D')">D</span>
+Em Tua chaga de amor, de amor
+
+<span class="secao-titulo">[Final]</span>
+
+   <span class="acorde" onclick="verAcorde('Em')">Em</span>
+Esconde-me em
+        <span class="acorde" onclick="verAcorde('D')">D</span>
+Tua chaga de amor
+      <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Amado meu
+   <span class="acorde" onclick="verAcorde('Em')">Em</span>  
+Esposo meu
+<span class="acorde" onclick="verAcorde('D')">D</span>  <span class="acorde" onclick="verAcorde('C9')">C9</span>
+Amado meu`
+        }
+    };
+
+    let musicaAtual = null;
+    let intervalId = null;
+    let scrollInterval = null;
+    let passoAtual = 0;
+    let tomDeslocamento = 0;
+
+    const escalaAcordes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "Am/G", "B"];
+    const audioPlayer = document.getElementById('audioPlayer');
+
+    function carregarMusica(id) {
+        pararTreino();
+        musicaAtual = bancoMusicas[id];
+        tomDeslocamento = 0;
+        document.getElementById('transposicaoVal').innerText = "(Original)";
+        
+        document.getElementById('tituloMusica').innerText = musicaAtual.titulo;
+        document.getElementById('nomeRitmo').innerText = musicaAtual.ritmo;
+        document.getElementById('bpmLabel').innerText = `${musicaAtual.bpm} BPM`;
+        document.getElementById('cifraBox').innerHTML = musicaAtual.cifra;
+        audioPlayer.src = musicaAtual.audioSrc;
+
+        const ritmoContainer = document.getElementById('ritmoSetas');
+        ritmoContainer.innerHTML = '';
+        musicaAtual.setas.forEach((seta, i) => {
+            ritmoContainer.innerHTML += `<div class="seta" id="seta-${i}">${seta}</div>`;
+        });
+
+        verAcorde('C');
+    }
+
+    function desenharBraoViolao(nomeAcorde, dadosAcorde) {
+        const canvas = document.getElementById('chordCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        document.getElementById('nomeAcordeExibido').innerText = `Acorde: ${nomeAcorde}`;
+
+        if (!dadosAcorde) return;
+
+        const frets = dadosAcorde.frets;
+        const barreFret = dadosAcorde.barre;
+        const barreStart = dadosAcorde.barreStart !== undefined ? dadosAcorde.barreStart : 0;
+        
+        const numFrets = frets.filter(f => typeof f === 'number' && f > 0);
+        const minFret = numFrets.length > 0 ? Math.min(...numFrets) : 1;
+        const startFret = minFret > 3 ? minFret : 1;
+
+        const startX = 35;
+        const startY = 40;
+        const stringGap = 28;
+        const fretGap = 38;
+
+        ctx.fillStyle = '#888';
+        ctx.font = 'bold 12px sans-serif';
+        
+        if (startFret > 1) {
+            ctx.fillText(`${startFret}ª casa`, 5, startY + 25);
+        } else {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(startX - 2, startY - 6, 5 * stringGap + 4, 6);
+        }
+
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 2;
+        for (let i = 0; i <= 4; i++) {
+            ctx.beginPath();
+            ctx.moveTo(startX, startY + (i * fretGap));
+            ctx.lineTo(startX + (5 * stringGap), startY + (i * fretGap));
+            ctx.stroke();
+        }
+
+        for (let i = 0; i < 6; i++) {
+            ctx.beginPath();
+            ctx.lineWidth = 1 + (0.4 * (5 - i));
+            ctx.moveTo(startX + (i * stringGap), startY);
+            ctx.lineTo(startX + (i * stringGap), startY + (4 * fretGap));
+            ctx.stroke();
+        }
+
+        const nomesCordas = ['E', 'A', 'D', 'G', 'B', 'e'];
+        ctx.fillStyle = '#888';
+        ctx.font = '11px sans-serif';
+        for (let i = 0; i < 6; i++) {
+            ctx.fillText(nomesCordas[i], startX + (i * stringGap) - 4, startY + (4 * fretGap) + 18);
+        }
+
+        if (barreFret) {
+            const relBarreFret = barreFret - startFret + 1;
+            if (relBarreFret >= 1 && relBarreFret <= 4) {
+                const y = startY + (relBarreFret * fretGap) - (fretGap / 2);
+                const xStart = startX + (barreStart * stringGap);
+                const xEnd = startX + (5 * stringGap);
+
+                ctx.fillStyle = '#bb86fc';
+                ctx.beginPath();
+                ctx.roundRect(xStart - 10, y - 8, (xEnd - xStart) + 20, 16, 8);
+                ctx.fill();
+
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.fillText('1', xStart - 3, y + 3);
+            }
+        }
+
+        frets.forEach((fret, cordaIdx) => {
+            const x = startX + (cordaIdx * stringGap);
+
+            if (fret === 'x' || fret === 'X') {
+                ctx.fillStyle = '#ff5252';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.fillText('✕', x - 6, startY - 12);
+            } else if (fret === 0) {
+                ctx.strokeStyle = '#03dac6';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(x, startY - 16, 5, 0, Math.PI * 2);
+                ctx.stroke();
+            } else {
+                const relFret = fret - startFret + 1;
+                if (relFret >= 1 && relFret <= 4 && (fret !== barreFret || cordaIdx < barreStart)) {
+                    const y = startY + (relFret * fretGap) - (fretGap / 2);
+                    
+                    ctx.fillStyle = '#bb86fc';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 9, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 10px sans-serif';
+                    ctx.fillText(fret, x - 3, y + 3);
+                }
+            }
+        });
+    }
+
+    function verAcorde(acorde) {
+        const dados = dicionarioAcordes[acorde];
+        desenharBraoViolao(acorde, dados);
+    }
+
+    audioPlayer.onplay = function() {
+        pararTreino();
+        const ms = (60 / musicaAtual.bpm) * 1000 / 2;
+        intervalId = setInterval(atualizarRitmo, ms);
+        const tempoScroll = musicaAtual.scrollSpeed || 60;
+        scrollInterval = setInterval(() => window.scrollBy(0, 1), tempoScroll);
+    };
+
+    audioPlayer.onpause = function() { pararTreino(); };
+    audioPlayer.onended = function() { pararTreino(); };
+
+    function pararTreino() {
+        if (intervalId) clearInterval(intervalId);
+        if (scrollInterval) clearInterval(scrollInterval);
+        intervalId = null;
+        scrollInterval = null;
+        passoAtual = 0;
+        document.querySelectorAll('.seta').forEach(el => el.classList.remove('ativa'));
+    }
+
+    function atualizarRitmo() {
+        document.querySelectorAll('.seta').forEach(el => el.classList.remove('ativa'));
+        const elSeta = document.getElementById(`seta-${passoAtual}`);
+        if (elSeta) elSeta.classList.add('ativa');
+        passoAtual = (passoAtual + 1) % musicaAtual.setas.length;
+    }
+
+    function mudarTom(semitons) {
+        tomDeslocamento += semitons;
+        document.getElementById('transposicaoVal').innerText = `${tomDeslocamento > 0 ? '+' : ''}${tomDeslocamento} semiton(s)`;
+        
+        const elementos = document.querySelectorAll('.acorde');
+        elementos.forEach(el => {
+            const acordeOriginal = el.getAttribute('onclick').match(/'([^']+)'/)[1];
+            const novoAcorde = transpositor(acordeOriginal, semitons);
+            el.innerText = novoAcorde;
+            el.setAttribute('onclick', `verAcorde('${novoAcorde}')`);
+        });
+    }
+
+    function transpositor(acorde, quantidade) {
+        const ehMenor = acorde.endsWith('m');
+        const notaBase = ehMenor ? acorde.slice(0, -1) : acorde;
+        let idx = escalaAcordes.indexOf(notaBase);
+        
+        if (idx === -1) return acorde;
+        
+        let novoIdx = (idx + quantidade) % 12;
+        if (novoIdx < 0) novoIdx += 12;
+        
+        return escalaAcordes[novoIdx] + (ehMenor ? 'm' : '');
+    }
+
+    carregarMusica('euAmeiTeVer');
+</script>
+
+</body>
+</html>
